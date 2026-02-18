@@ -17,13 +17,14 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - todo_network
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: todo_backend
-    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     environment:
       DEBUG: ${DEBUG:-True}
       SECRET_KEY: ${SECRET_KEY:-django-insecure-dev-key-change-in-production}
@@ -43,6 +44,7 @@ services:
         condition: service_healthy
     networks:
       - todo_network
+    restart: on-failure
 
   frontend:
     build:
