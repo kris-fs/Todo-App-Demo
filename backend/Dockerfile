@@ -21,5 +21,5 @@ USER appuser
 # Expose port
 EXPOSE 8000
 
-# Run migrations and start server
-CMD ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
+# Run migrations and start server with retry logic
+CMD ["sh", "-c", "for i in 1 2 3 4 5; do python manage.py migrate && break || sleep 10; done && python manage.py runserver 0.0.0.0:8000"]

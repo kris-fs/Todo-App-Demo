@@ -1,170 +1,158 @@
-# Quick Start Guide - Todo App
+# Quick Start Guide - Todo App (Docker Only)
 
-## 🚀 Start in 30 Seconds (Docker)
+Get the Todo App running in Docker in just 3 steps!
+
+## ⚡ Quick Start (3 Steps)
+
+### 1️⃣ Clone the Repository
 
 ```bash
-cd /home/kris/projects
-cp .env.example .env
-docker-compose up -d
+git clone https://github.com/kris-fs/Todo-App-Demo.git
+cd Todo-App-Demo
 ```
 
-Then open:
+### 2️⃣ Start the Application
+
+```bash
+docker-compose up
+```
+
+**Wait 30-45 seconds** for services to be ready. You'll see:
+```
+todo_frontend | ➜  Local:   http://localhost:5173/
+todo_backend  | Starting development server at http://0.0.0.0:8000/
+todo_db       | database system is ready to accept connections
+```
+
+### 3️⃣ Open in Browser
+
 - **Frontend**: http://localhost:5173
 - **API Docs**: http://localhost:8000/api/docs
 
-## 🛑 Stop Services
+## 🎯 What You Get
+
+✅ Full-stack todo application
+✅ PostgreSQL database
+✅ REST API with documentation
+✅ Vue 3 frontend with calendar view
+✅ All running in Docker containers
+
+## 🛑 Stop the Application
 
 ```bash
+# Stop services (keep data)
+docker-compose stop
+
+# Stop and remove containers (keep data)
 docker-compose down
+
+# Stop and remove everything (delete data)
+docker-compose down -v
 ```
 
-## 📊 Check Status
+## 📊 Check Service Status
 
 ```bash
 docker-compose ps
+```
+
+## 📋 View Logs
+
+```bash
+# All services
 docker-compose logs -f
+
+# Specific service
+docker-compose logs -f backend
+docker-compose logs -f frontend
+docker-compose logs -f db
 ```
 
-## 💻 Local Development (Without Docker)
-
-### Backend
-```bash
-cd backend
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py runserver
-```
-
-### Frontend (New Terminal)
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-## 🧪 Test the App
+## 🧪 Test the Application
 
 ### Create a Todo
+
 1. Open http://localhost:5173
-2. Enter title: "Buy groceries"
+2. Enter a title in the form
 3. Click "Add Todo"
+4. See it appear in the list
 
-### View in Calendar
-1. Click "📅 Calendar View"
-2. See todo on today's date
-3. Click date to view details
+### Switch to Calendar View
 
-### Edit a Todo
-1. Click "Edit" button
-2. Change title or date
-3. Click "Save"
+1. Click "📅 Calendar View" tab
+2. See todos on their assigned dates
+3. Click a date to view todos for that day
 
-### Delete a Todo
-1. Click "Delete" button
-2. Confirm deletion
+### Test the API
 
-## 📚 Documentation
-
-- **README.md** - Full setup and features guide
-- **TESTING.md** - Testing procedures and scenarios
-- **IMPLEMENTATION_SUMMARY.md** - What was built
-- **VERIFICATION_CHECKLIST.md** - All items verified
-
-## 🔗 API Endpoints
-
-```
-GET    /api/todos/                    - List all todos
-POST   /api/todos/                    - Create todo
-GET    /api/todos/{id}/               - Get single todo
-PATCH  /api/todos/{id}/               - Update todo
-DELETE /api/todos/{id}/               - Delete todo
-POST   /api/todos/{id}/toggle_completed/ - Toggle status
-GET    /api/todos/by_date/?date=YYYY-MM-DD - Get by date
-```
-
-## 🔧 Environment Variables
-
-### Backend (.env)
-```
-DEBUG=True
-SECRET_KEY=your-secret-key
-POSTGRES_DB=todo_db
-POSTGRES_USER=todo_user
-POSTGRES_PASSWORD=todo_password
-DB_HOST=localhost
-DB_PORT=5432
-```
-
-### Frontend (.env)
-```
-VITE_API_BASE_URL=http://localhost:8000/api
-```
-
-## 🐛 Troubleshooting
-
-### Port Already in Use
 ```bash
-# Kill process on port 8000
-lsof -i :8000 | grep LISTEN | awk '{print $2}' | xargs kill -9
+# Get all todos
+curl http://localhost:8000/api/todos/
 
+# Create a todo
+curl -X POST http://localhost:8000/api/todos/ \
+  -H "Content-Type: application/json" \
+  -d '{"title": "My Todo", "date": "2026-02-20"}'
+
+# View API documentation
+open http://localhost:8000/api/docs
+```
+
+## 🔧 Common Commands
+
+```bash
+# Start in background
+docker-compose up -d
+
+# Restart services
+docker-compose restart
+
+# Rebuild images
+docker-compose build
+
+# Run Django commands
+docker-compose exec -T backend python manage.py migrate
+
+# Access database
+docker-compose exec db psql -U todo_user -d todo_db
+
+# Create superuser
+docker-compose exec -T backend python manage.py createsuperuser
+```
+
+## ⚠️ Troubleshooting
+
+### Services won't start
+```bash
+docker-compose down -v
+docker-compose up
+```
+
+### Port already in use
+```bash
 # Kill process on port 5173
-lsof -i :5173 | grep LISTEN | awk '{print $2}' | xargs kill -9
+lsof -i :5173
+kill -9 <PID>
 ```
 
-### Database Connection Error
+### Check logs for errors
 ```bash
-# Check if PostgreSQL is running
-docker-compose ps db
-
-# Restart database
-docker-compose restart db
+docker-compose logs backend
+docker-compose logs db
 ```
 
-### Frontend Not Loading
-```bash
-# Clear cache and reinstall
-cd frontend
-rm -rf node_modules package-lock.json
-npm install
-npm run dev
-```
+## 📚 More Information
 
-## 📱 Features at a Glance
+- **Full Documentation**: See [README.md](README.md)
+- **Docker Guide**: See [DOCKER_GUIDE.md](DOCKER_GUIDE.md)
+- **API Reference**: http://localhost:8000/api/docs (when running)
 
-| Feature | List View | Calendar View |
-|---------|-----------|---------------|
-| View Todos | ✅ | ✅ |
-| Add Todo | ✅ | ❌ |
-| Edit Todo | ✅ | ✅ |
-| Delete Todo | ✅ | ✅ |
-| Toggle Status | ✅ | ✅ |
-| Filter by Status | ✅ | ❌ |
-| View by Date | ❌ | ✅ |
-| Navigate Months | ❌ | ✅ |
+## 🎉 You're Ready!
 
-## 🎯 Next Steps
-
-1. **Explore the Code**
-   - Backend: `/home/kris/projects/backend/todos/`
-   - Frontend: `/home/kris/projects/frontend/src/`
-
-2. **Make Changes**
-   - Edit files and see hot reload
-   - Backend: Restart server
-   - Frontend: Auto-reload
-
-3. **Deploy**
-   - See README.md for production setup
-   - Use Docker Compose for easy deployment
-
-## 📞 Support
-
-- Check TESTING.md for test scenarios
-- Check README.md for detailed documentation
-- Check IMPLEMENTATION_SUMMARY.md for architecture
-
----
+The application is now running with:
+- ✅ Frontend at http://localhost:5173
+- ✅ API at http://localhost:8000/api
+- ✅ Database at localhost:5432
+- ✅ All migrations applied automatically
 
 **Happy Todo-ing! 📝✨**

@@ -2,6 +2,8 @@
 
 A modern, full-stack todo application with Django REST Framework backend, Vue 3 frontend, and PostgreSQL database. Features both a list view and calendar view for managing todos.
 
+**This application runs entirely in Docker containers. No local installation required.**
+
 ## Features
 
 - ✅ **List View**: Manage todos with filtering (all, pending, completed)
@@ -31,7 +33,7 @@ A modern, full-stack todo application with Django REST Framework backend, Vue 3 
 
 ### DevOps
 - **Containerization**: Docker & Docker Compose
-- **Database**: PostgreSQL in Docker
+- **Database**: PostgreSQL 15 in Docker
 
 ## Project Structure
 
@@ -79,123 +81,107 @@ A modern, full-stack todo application with Django REST Framework backend, Vue 3 
 │       └── services/
 │           └── api.js
 ├── docker-compose.yml
+├── init-db.sql
 ├── .env.example
 ├── .gitignore
 └── README.md
 ```
 
-## Quick Start with Docker Compose
+## Getting Started with Docker
 
 ### Prerequisites
-- Docker and Docker Compose installed
-- Git
 
-### Setup
+- **Docker**: [Install Docker](https://docs.docker.com/get-docker/)
+- **Docker Compose**: [Install Docker Compose](https://docs.docker.com/compose/install/)
 
-1. **Clone the repository** (if applicable)
+### Quick Start (3 Steps)
+
+1. **Clone the repository**
    ```bash
-   cd /home/kris/projects
+   git clone https://github.com/kris-fs/Todo-App-Demo.git
+   cd Todo-App-Demo
    ```
 
-2. **Create environment file**
+2. **Start the application**
    ```bash
-   cp .env.example .env
+   docker-compose up
    ```
 
-3. **Start all services**
-   ```bash
-   docker-compose up -d
+   The application will start and display logs. This is normal behavior. Wait for the message:
+   ```
+   todo_frontend | ➜  Local:   http://localhost:5173/
    ```
 
-4. **Access the application**
-   - Frontend: http://localhost:5173
-   - Backend API: http://localhost:8000/api
-   - API Documentation: http://localhost:8000/api/docs
-   - Admin Panel: http://localhost:8000/admin
+3. **Open in your browser**
+   - **Frontend**: http://localhost:5173
+   - **API**: http://localhost:8000/api
+   - **API Documentation**: http://localhost:8000/api/docs
 
-### Stopping Services
+## Running the Application
+
+### Start Services (Foreground)
+
 ```bash
+docker-compose up
+```
+
+This command:
+- Starts all three services (PostgreSQL, Django, Vue)
+- Shows live logs from all containers
+- Automatically runs database migrations
+- Initializes the database on first run
+
+**Wait 30-45 seconds for all services to be ready.** You'll see:
+```
+todo_frontend | ➜  Local:   http://localhost:5173/
+todo_backend  | Starting development server at http://0.0.0.0:8000/
+todo_db       | database system is ready to accept connections
+```
+
+### Start Services (Background)
+
+```bash
+docker-compose up -d
+```
+
+This starts services in the background. Check status with:
+```bash
+docker-compose ps
+```
+
+### Stop Services
+
+```bash
+# Stop services (keep data)
+docker-compose stop
+
+# Stop and remove containers (keep data)
 docker-compose down
+
+# Stop and remove everything (delete data)
+docker-compose down -v
 ```
 
-### View Logs
-```bash
-# All services
-docker-compose logs -f
+## Accessing the Application
 
-# Specific service
-docker-compose logs -f backend
-docker-compose logs -f frontend
-docker-compose logs -f db
-```
+### Frontend
+- **URL**: http://localhost:5173
+- **Features**:
+  - List view with todo management
+  - Calendar view with date-based organization
+  - Real-time updates
 
-## Local Development (Without Docker)
+### Backend API
+- **Base URL**: http://localhost:8000/api
+- **Documentation**: http://localhost:8000/api/docs (Swagger UI)
+- **Admin Panel**: http://localhost:8000/admin
 
-### Backend Setup
-
-1. **Navigate to backend directory**
-   ```bash
-   cd backend
-   ```
-
-2. **Create virtual environment**
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-
-3. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Create .env file**
-   ```bash
-   cp ../.env.example .env
-   ```
-
-5. **Update .env for local PostgreSQL**
-   ```
-   DB_HOST=localhost
-   DB_PORT=5432
-   ```
-
-6. **Run migrations**
-   ```bash
-   python manage.py migrate
-   ```
-
-7. **Create superuser (optional)**
-   ```bash
-   python manage.py createsuperuser
-   ```
-
-8. **Start development server**
-   ```bash
-   python manage.py runserver
-   ```
-
-### Frontend Setup
-
-1. **Navigate to frontend directory**
-   ```bash
-   cd frontend
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Create .env file**
-   ```bash
-   echo "VITE_API_BASE_URL=http://localhost:8000/api" > .env
-   ```
-
-4. **Start development server**
-   ```bash
-   npm run dev
-   ```
+### Database
+- **Host**: localhost
+- **Port**: 5432
+- **Database**: todo_db
+- **User**: todo_user
+- **Password**: todo_password
 
 ## API Endpoints
 
@@ -213,6 +199,172 @@ docker-compose logs -f db
 - `date` - Filter by date (YYYY-MM-DD)
 - `ordering` - Sort by field (created_at, date, completed)
 
+## Common Tasks
+
+### View Logs
+
+```bash
+# View all service logs
+docker-compose logs -f
+
+# View specific service logs
+docker-compose logs -f backend
+docker-compose logs -f frontend
+docker-compose logs -f db
+```
+
+### Access Database
+
+```bash
+# Connect to PostgreSQL
+docker-compose exec db psql -U todo_user -d todo_db
+
+# List tables
+\dt
+
+# Exit
+\q
+```
+
+### Run Django Commands
+
+```bash
+# Create superuser
+docker-compose exec -T backend python manage.py createsuperuser
+
+# Run migrations
+docker-compose exec -T backend python manage.py migrate
+
+# Create migrations
+docker-compose exec -T backend python manage.py makemigrations
+
+# Django shell
+docker-compose exec -T backend python manage.py shell
+```
+
+### Run Frontend Commands
+
+```bash
+# Install new npm packages
+docker-compose exec -T frontend npm install <package-name>
+
+# Build for production
+docker-compose exec -T frontend npm run build
+```
+
+## Testing the Application
+
+### Test API with curl
+
+```bash
+# Get all todos
+curl http://localhost:8000/api/todos/
+
+# Create a todo
+curl -X POST http://localhost:8000/api/todos/ \
+  -H "Content-Type: application/json" \
+  -d '{"title": "My Todo", "description": "Test", "date": "2026-02-20"}'
+
+# Get todos for a specific date
+curl "http://localhost:8000/api/todos/by_date/?date=2026-02-20"
+```
+
+### Test Frontend
+
+1. Open http://localhost:5173 in your browser
+2. Create a new todo in the List View
+3. Switch to Calendar View to see it on the calendar
+4. Edit and delete todos to test functionality
+
+## Environment Configuration
+
+### Default Environment Variables
+
+The application uses these default values (defined in docker-compose.yml):
+
+```
+POSTGRES_DB=todo_db
+POSTGRES_USER=todo_user
+POSTGRES_PASSWORD=todo_password
+DEBUG=True
+SECRET_KEY=django-insecure-dev-key-change-in-production
+VITE_API_BASE_URL=http://localhost:8000/api
+```
+
+### Custom Configuration
+
+To use custom values, create a `.env` file in the project root:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` with your values:
+
+```
+POSTGRES_DB=my_database
+POSTGRES_USER=my_user
+POSTGRES_PASSWORD=my_password
+DEBUG=False
+SECRET_KEY=your-secret-key-here
+```
+
+Then start with:
+```bash
+docker-compose up
+```
+
+## Troubleshooting
+
+### Services Won't Start
+
+```bash
+# Clean up and restart
+docker-compose down -v
+docker-compose up
+```
+
+### Database Connection Error
+
+```bash
+# Check database logs
+docker-compose logs db
+
+# Verify database is healthy
+docker-compose ps
+```
+
+### Port Already in Use
+
+If ports 5173, 8000, or 5432 are already in use:
+
+```bash
+# Change ports in docker-compose.yml
+# Or kill existing processes:
+lsof -i :5173  # Find process on port 5173
+kill -9 <PID>  # Kill the process
+```
+
+### Frontend Not Loading
+
+```bash
+# Check frontend logs
+docker-compose logs frontend
+
+# Restart frontend service
+docker-compose restart frontend
+```
+
+### API Not Responding
+
+```bash
+# Check backend logs
+docker-compose logs backend
+
+# Restart backend service
+docker-compose restart backend
+```
+
 ## Database Schema
 
 ### Todo Model
@@ -226,111 +378,73 @@ docker-compose logs -f db
 - updated_at: DateTimeField (auto_now=True)
 ```
 
-## Features in Detail
+## Performance Tips
 
-### List View
-- Display all todos in a list format
-- Filter by status: All, Pending, Completed
-- Add new todos with title, description, and optional date
-- Edit existing todos
-- Delete todos
-- Toggle completion status with checkbox
-- Shows creation date and assigned date for each todo
+1. **Use background mode for production**:
+   ```bash
+   docker-compose up -d
+   ```
 
-### Calendar View
-- Month grid calendar view
-- Visual indicators for dates with todos
-- Click on a date to view todos for that day
-- Navigate between months
-- Edit todos directly from calendar view
-- Shows todo count for each date
+2. **Monitor resource usage**:
+   ```bash
+   docker stats
+   ```
 
-## Environment Variables
+3. **Clean up unused resources**:
+   ```bash
+   docker system prune
+   ```
 
-### Backend (.env)
-```
-DEBUG=True
-SECRET_KEY=your-secret-key-here
-POSTGRES_DB=todo_db
-POSTGRES_USER=todo_user
-POSTGRES_PASSWORD=todo_password
-DB_HOST=localhost
-DB_PORT=5432
-ALLOWED_HOSTS=localhost,127.0.0.1
-CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
-```
+4. **View container resource limits**:
+   ```bash
+   docker-compose ps
+   ```
 
-### Frontend (.env)
-```
-VITE_API_BASE_URL=http://localhost:8000/api
-```
+## Security Notes
 
-## Testing
+⚠️ **Development Only**: The default configuration is for development. For production:
 
-### Backend Tests
-```bash
-cd backend
-python manage.py test
-```
-
-### Frontend Tests (if configured)
-```bash
-cd frontend
-npm run test
-```
-
-## Production Deployment
-
-### Backend
-1. Set `DEBUG=False` in .env
-2. Generate a secure `SECRET_KEY`
+1. Change `SECRET_KEY` to a secure random value
+2. Set `DEBUG=False`
 3. Update `ALLOWED_HOSTS` with your domain
-4. Use a production WSGI server (Gunicorn, uWSGI)
-5. Set up proper database backups
+4. Use strong database password
+5. Configure HTTPS/SSL
 6. Use environment-specific settings
 
-### Frontend
-1. Build for production:
-   ```bash
-   npm run build
-   ```
-2. Deploy the `dist/` folder to a static hosting service
-3. Update `VITE_API_BASE_URL` to point to production API
+## Deployment
 
-### Docker Production
-1. Update docker-compose.yml for production
-2. Use environment-specific .env files
-3. Set up proper volume management for database
-4. Configure reverse proxy (Nginx)
-5. Set up SSL/TLS certificates
+### Docker Hub
 
-## Troubleshooting
+To deploy to Docker Hub:
 
-### Database Connection Issues
-- Ensure PostgreSQL is running
-- Check database credentials in .env
-- Verify DB_HOST is correct (use 'db' in Docker, 'localhost' locally)
+```bash
+# Build images
+docker-compose build
 
-### CORS Errors
-- Check CORS_ALLOWED_ORIGINS in backend .env
-- Ensure frontend URL is included
-- Verify API base URL in frontend .env
+# Tag images
+docker tag projects_backend:latest yourusername/todo-backend:latest
+docker tag projects_frontend:latest yourusername/todo-frontend:latest
 
-### Port Already in Use
-- Change ports in docker-compose.yml or local development
-- Kill existing processes: `lsof -i :8000` or `lsof -i :5173`
+# Push to Docker Hub
+docker push yourusername/todo-backend:latest
+docker push yourusername/todo-frontend:latest
+```
 
-### Frontend Not Loading
-- Clear browser cache
-- Check that backend is running
-- Verify API base URL in .env
-- Check browser console for errors
+### Cloud Deployment
+
+For cloud deployment (AWS, GCP, Azure, Heroku):
+
+1. Push images to container registry
+2. Update docker-compose.yml with registry URLs
+3. Deploy using cloud provider's container orchestration
+4. Configure environment variables in cloud platform
+5. Set up persistent volumes for database
 
 ## Contributing
 
 1. Create a feature branch
 2. Make your changes
-3. Test thoroughly
+3. Test in Docker
 4. Submit a pull request
 
 ## License
@@ -339,8 +453,13 @@ This project is open source and available under the MIT License.
 
 ## Support
 
-For issues and questions, please open an issue in the repository.
+For issues and questions:
+1. Check the troubleshooting section above
+2. Review Docker logs: `docker-compose logs`
+3. Open an issue in the repository
 
 ---
 
 **Happy Todo-ing! 📝✨**
+
+For more information, see [DOCKER_GUIDE.md](DOCKER_GUIDE.md) for detailed Docker instructions.
