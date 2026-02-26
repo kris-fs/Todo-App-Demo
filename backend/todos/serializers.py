@@ -4,10 +4,23 @@ from datetime import datetime
 
 
 class TodoSerializer(serializers.ModelSerializer):
+    # Add a computed field that returns date or created_at date if date is NULL
+    effective_date = serializers.SerializerMethodField()
+
     class Meta:
         model = Todo
-        fields = ['id', 'title', 'description', 'date', 'completed', 'created_at', 'updated_at']
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        fields = ['id', 'title', 'description', 'date', 'completed', 'created_at', 'updated_at', 'effective_date']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'effective_date']
+
+    def get_effective_date(self, obj):
+        """
+        Return the date field if it exists, otherwise return the date part of created_at.
+        This ensures all todos have a date for filtering purposes.
+        """
+        if obj.date:
+            return obj.date
+        # Extract just the date part from created_at timestamp
+        return obj.created_at.date()
 
     def validate_title(self, value):
         if not value or not value.strip():

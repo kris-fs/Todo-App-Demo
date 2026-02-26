@@ -124,11 +124,12 @@ const completedTodos = computed(() => todoStore.completedTodos)
 const pendingTodos = computed(() => todoStore.pendingTodos)
 
 // Apply date filter first (for count calculations)
+// Use effective_date which falls back to created_at date if date is NULL
 const dateFilteredTodos = computed(() => {
   if (!filterDate.value) {
     return todos.value
   }
-  return todos.value.filter(todo => todo.date === filterDate.value)
+  return todos.value.filter(todo => todo.effective_date === filterDate.value)
 })
 
 // Calculate counts based on date-filtered todos
@@ -151,24 +152,23 @@ const statusFilteredTodos = computed(() => {
 })
 
 // Apply sort by date
+// Use effective_date which falls back to created_at date if date is NULL
 const filteredTodos = computed(() => {
   const items = [...statusFilteredTodos.value]
 
   if (sortOrder.value === 'asc') {
-    // Sort ascending (oldest first) - todos without dates go to the end
+    // Sort ascending (oldest first) using effective_date
     return items.sort((a, b) => {
-      if (!a.date && !b.date) return 0
-      if (!a.date) return 1
-      if (!b.date) return -1
-      return new Date(a.date) - new Date(b.date)
+      const dateA = new Date(a.effective_date)
+      const dateB = new Date(b.effective_date)
+      return dateA - dateB
     })
   } else if (sortOrder.value === 'desc') {
-    // Sort descending (newest first) - todos without dates go to the end
+    // Sort descending (newest first) using effective_date
     return items.sort((a, b) => {
-      if (!a.date && !b.date) return 0
-      if (!a.date) return 1
-      if (!b.date) return -1
-      return new Date(b.date) - new Date(a.date)
+      const dateA = new Date(a.effective_date)
+      const dateB = new Date(b.effective_date)
+      return dateB - dateA
     })
   }
 
