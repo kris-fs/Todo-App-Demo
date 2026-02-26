@@ -1,6 +1,7 @@
 <template>
   <div class="space-y-6">
     <TodoForm />
+    <TodoDateFilter />
     <TodoList @edit="editTodo" />
 
     <!-- Edit Modal -->
@@ -78,6 +79,7 @@
 import { ref } from 'vue'
 import { useTodoStore } from '../stores/todoStore'
 import TodoForm from '../components/TodoForm.vue'
+import TodoDateFilter from '../components/TodoDateFilter.vue'
 import TodoList from '../components/TodoList.vue'
 
 const todoStore = useTodoStore()
