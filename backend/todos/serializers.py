@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Todo
+from datetime import datetime
 
 
 class TodoSerializer(serializers.ModelSerializer):
@@ -12,3 +13,13 @@ class TodoSerializer(serializers.ModelSerializer):
         if not value or not value.strip():
             raise serializers.ValidationError("Title cannot be empty.")
         return value.strip()
+
+    def create(self, validated_data):
+        """
+        Create a todo and automatically set date to creation date if not provided.
+        """
+        # If no date is provided, use today's date (creation date)
+        if not validated_data.get('date'):
+            validated_data['date'] = datetime.now().date()
+
+        return super().create(validated_data)
