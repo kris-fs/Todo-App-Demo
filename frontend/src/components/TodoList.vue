@@ -18,7 +18,7 @@
               : 'bg-gray-200 text-gray-700 hover:bg-gray-300',
           ]"
         >
-          All ({{ todos.length }})
+          All ({{ dateFilteredTodos.length }})
         </button>
         <button
           @click="filterType = 'pending'"
@@ -29,7 +29,7 @@
               : 'bg-gray-200 text-gray-700 hover:bg-gray-300',
           ]"
         >
-          Pending ({{ pendingTodos.length }})
+          Pending ({{ dateFilteredPendingTodos.length }})
         </button>
         <button
           @click="filterType = 'completed'"
@@ -40,7 +40,7 @@
               : 'bg-gray-200 text-gray-700 hover:bg-gray-300',
           ]"
         >
-          Completed ({{ completedTodos.length }})
+          Completed ({{ dateFilteredCompletedTodos.length }})
         </button>
       </div>
     </div>
@@ -123,27 +123,36 @@ const loading = computed(() => todoStore.loading)
 const completedTodos = computed(() => todoStore.completedTodos)
 const pendingTodos = computed(() => todoStore.pendingTodos)
 
-// Apply status filter first
-const statusFilteredTodos = computed(() => {
-  if (filterType.value === 'completed') {
-    return completedTodos.value
-  } else if (filterType.value === 'pending') {
-    return pendingTodos.value
-  }
-  return todos.value
-})
-
-// Apply date filter
+// Apply date filter first (for count calculations)
 const dateFilteredTodos = computed(() => {
   if (!filterDate.value) {
-    return statusFilteredTodos.value
+    return todos.value
   }
-  return statusFilteredTodos.value.filter(todo => todo.date === filterDate.value)
+  return todos.value.filter(todo => todo.date === filterDate.value)
+})
+
+// Calculate counts based on date-filtered todos
+const dateFilteredCompletedTodos = computed(() =>
+  dateFilteredTodos.value.filter(t => t.completed)
+)
+
+const dateFilteredPendingTodos = computed(() =>
+  dateFilteredTodos.value.filter(t => !t.completed)
+)
+
+// Apply status filter
+const statusFilteredTodos = computed(() => {
+  if (filterType.value === 'completed') {
+    return dateFilteredCompletedTodos.value
+  } else if (filterType.value === 'pending') {
+    return dateFilteredPendingTodos.value
+  }
+  return dateFilteredTodos.value
 })
 
 // Apply sort by date
 const filteredTodos = computed(() => {
-  const items = [...dateFilteredTodos.value]
+  const items = [...statusFilteredTodos.value]
 
   if (sortOrder.value === 'asc') {
     // Sort ascending (oldest first) - todos without dates go to the end
